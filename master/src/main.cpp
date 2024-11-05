@@ -5,7 +5,6 @@
 void setup()
 {
   Wire.begin();         // Join I2C bus as master
-  Serial.begin(115200); // Initialize Serial Monitor for debugging
   Keyboard.begin();
 }
 
@@ -22,7 +21,6 @@ void loop()
     }
     else
     {
-      Serial.println(keyCode);
       if ((keyCode >= 65) && (keyCode <= 90))
       {
         //Press range
@@ -30,10 +28,9 @@ void loop()
       }
       if ((keyCode >= 97) && (keyCode <= 122))
       {
-        //Release range
-        Keyboard.release(keyCode);
+        //Release range (32 offset because of lowercase to upper)
+        Keyboard.release(keyCode - 32);
       }
-      
     }
   }
 
