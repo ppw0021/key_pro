@@ -3,10 +3,30 @@
 #include <Wire.h>
 int command = 0;
 
+
+//Ascii upper, col, row
+int keyMatrixMap[][3] = {
+  {81, 0, 0},
+  {87, 1, 0},
+
+};
+
+int colToPinArray[][2] = {
+  {},
+
+};
+
+int rowToPinArray[][2] = {
+
+};
+
+// keys
+// asciilower, asciiupper, currentState, buttonChange, pin
+
 int keyMap[][5] = {
-    {65, 97, 0, 0, 9}, // A, a, false, false
-    {66, 98, 0, 0, 8}, // B, b, false, false
-    {67, 99, 0, 0, 7}, // C, c, false, false
+    {65, NULL, 0, 0, 9}, // A, a, false, false, ID
+    {66, NULL, 0, 0, 8}, // B, b, false, false, pin
+    {67, NULL, 0, 0, 7}, // C, c, false, false, pin
 };
 
 int keyCount = (sizeof(keyMap) / sizeof(keyMap[0]));
@@ -23,8 +43,7 @@ void receiveEvent(int bytes)
 bool buttonCurrentState = false;
 bool buttonChange = false;
 
-// keys
-// asciilower, asciiupper, currentState, buttonChange, pin
+
 
 void requestEvent()
 {
@@ -70,6 +89,7 @@ void setup()
   for (int i = 0; i < keyCount; i++)
   {
     int pin = keyMap[i][4];
+    keyMap[i][1] = (keyMap[i][0] + 32);
     pinMode(pin, INPUT);
     Serial.println(pin);
   }
@@ -101,3 +121,4 @@ void loop()
   }
   delay(1);
 }
+
