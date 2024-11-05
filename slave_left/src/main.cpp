@@ -1,36 +1,39 @@
 #include <Arduino.h>
 
 #include <Wire.h>
+int command = 0;
+
+int keyMap[][5] = {
+    {65, 97, 0, 0, 9}, // A, a, false, false
+    {66, 98, 0, 0, 8}, // B, b, false, false
+    {67, 99, 0, 0, 7}, // C, c, false, false
+};
+
+int keyCount = (sizeof(keyMap) / sizeof(keyMap[0]));
 
 // function that executes whenever data is received from master
 // this function is registered as an event, see setup()
-void receiveEvent(int howMany)
+void receiveEvent(int bytes)
 {
-  while (1 < Wire.available()) // loop through all but the last
+  if (Wire.available())
   {
-    char c = Wire.read(); // receive byte as a character
-    Serial.print(c);      // print the character
+    command = Wire.read(); // Read the command sent by the master
   }
-  int x = Wire.read(); // receive byte as an integer
-  digitalWrite(10, HIGH);
-  delay(50);
-  digitalWrite(10, LOW);
-  Serial.println(x); // print the integer
 }
 bool buttonCurrentState = false;
 bool buttonChange = false;
 
 // keys
 // asciilower, asciiupper, currentState, buttonChange, pin
-int keyMap[][5] = {
-    {97, 65, 0, 0, 9}, // A, a, false, false
-    {98, 66, 0, 0, 8}, // B, b, false, false
-    {99, 67, 0, 0, 7}, // C, c, false, false
-};
 
 void requestEvent()
 {
-  int keyCount = (sizeof(keyMap) / sizeof(keyMap[0]));
+  // if (command == 2)
+  // {
+  //   Wire.write(keyCount);
+  //   command = 1;
+  //   return;
+  // }
   for (int i = 0; i < keyCount; i++)
   {
     int pressedAsciiCode = keyMap[i][0];
@@ -64,7 +67,6 @@ void setup()
   Serial.begin(115200);         // start serial for output
 
   // Assign pins
-  int keyCount = (sizeof(keyMap) / sizeof(keyMap[0]));
   for (int i = 0; i < keyCount; i++)
   {
     int pin = keyMap[i][4];
