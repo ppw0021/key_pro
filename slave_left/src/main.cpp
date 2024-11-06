@@ -3,33 +3,56 @@
 #include <Wire.h>
 int command = 0;
 
-
-//Ascii upper, col, row
+// Ascii upper, colID, rowID
 int keyMatrixMap[][3] = {
-  {81, 0, 0},
-  {87, 1, 0},
+    {1, 0, 0},
+    {2, 1, 0},
+    {3, 2, 0},
+    {4, 3, 0},
+    {5, 0, 1},
+    {6, 1, 1},
+    {7, 2, 1},
+    {8, 3, 1},
+    {9, 0, 2},
+    {10, 1, 2},
+    {11, 2, 2},
+    {12, 3, 2},
+    {13, 0, 3},
+    {14, 1, 3},
+    {15, 2, 3},
+    {16, 3, 3}};
 
-};
+// State and change
+int ketStates[][2] = {
+    {0, 0},
+    {0, 0},
+    {0, 0},
+    {0, 0},
+    {0, 0},
+    {0, 0},
+    {0, 0},
+    {0, 0},
+    {0, 0},
+    {0, 0},
+    {0, 0},
+    {0, 0},
+    {0, 0},
+    {0, 0},
+    {0, 0},
+    {0, 0},
+    {0, 0},
+    {0, 0},
+    {0, 0},
+    {0, 0}};
 
-int colToPinArray[][2] = {
-  {},
+// Power pins (colID)
+int colToPinArray[] = {9, 8, 7, 6};
 
-};
+// Reading pins (rowID)
+int rowToPinArray[] = {2, 3, 4, 5};
 
-int rowToPinArray[][2] = {
-
-};
-
-// keys
-// asciilower, asciiupper, currentState, buttonChange, pin
-
-int keyMap[][5] = {
-    {65, NULL, 0, 0, 9}, // A, a, false, false, ID
-    {66, NULL, 0, 0, 8}, // B, b, false, false, pin
-    {67, NULL, 0, 0, 7}, // C, c, false, false, pin
-};
-
-int keyCount = (sizeof(keyMap) / sizeof(keyMap[0]));
+// Total key count
+int keyCount = (sizeof(keyMatrixMap) / sizeof(keyMatrixMap[0]));
 
 // function that executes whenever data is received from master
 // this function is registered as an event, see setup()
@@ -40,10 +63,6 @@ void receiveEvent(int bytes)
     command = Wire.read(); // Read the command sent by the master
   }
 }
-bool buttonCurrentState = false;
-bool buttonChange = false;
-
-
 
 void requestEvent()
 {
@@ -55,22 +74,30 @@ void requestEvent()
   // }
   for (int i = 0; i < keyCount; i++)
   {
-    int pressedAsciiCode = keyMap[i][0];
-    int releasedAsciiCode = keyMap[i][1];
-    int currentState = keyMap[i][2];
-    int change = keyMap[i][3];
+    int pressedAsciiCode = keyMatrixMap[i][0];
+    int releasedAsciiCode = keyMatrixMap[i][0] + 32;
+    int currentState = ketStates[i][0];
+    int change = ketStates[i][1];
 
     if ((currentState == 1) && (change == 1))
     {
       // Pressed
+      Serial.println();
+      Serial.print(pressedAsciiCode);
+      Serial.print(" pressed");
+      Serial.println();
       Wire.write(pressedAsciiCode);
-      keyMap[i][3] = 0;
+      ketStates[i][1] = 0;
     }
     if ((currentState == 0) && (change == 1))
     {
       // Released
+      Serial.println();
+      Serial.print(releasedAsciiCode);
+      Serial.print(" released");
+      Serial.println();
       Wire.write(releasedAsciiCode);
-      keyMap[i][3] = 0;
+      ketStates[i][1] = 0;
     }
     Wire.write(0);
   }
@@ -85,40 +112,55 @@ void setup()
   Wire.onRequest(requestEvent); // Register request handler
   Serial.begin(115200);         // start serial for output
 
-  // Assign pins
-  for (int i = 0; i < keyCount; i++)
+  // Set pinmodes for outputs
+  int colSize = sizeof(colToPinArray) / sizeof(colToPinArray[0]);
+  for (int i = 0; i < colSize; i++)
   {
-    int pin = keyMap[i][4];
-    keyMap[i][1] = (keyMap[i][0] + 32);
-    pinMode(pin, INPUT);
-    Serial.println(pin);
+    pinMode(colToPinArray[i], OUTPUT);
+    digitalWrite(colToPinArray[i], HIGH);
   }
+
+  // Set pinmodes for inputs
+  int rowSize = sizeof(rowToPinArray) / sizeof(rowToPinArray[0]);
+  for (int i = 0; i < rowSize; i++)
+  {
+    pinMode(rowToPinArray[i], INPUT_PULLUP);
+  }
+}
+
+// Check a pin at given colID and rowID
+bool checkPin(int colID, int rowID)
+{
+  int col = colToPinArray[colID];
+  int row = rowToPinArray[rowID];
+  digitalWrite(col, LOW);
+  bool state = digitalRead(row);
+  digitalWrite(col, HIGH);
+  return !state;
 }
 
 void loop()
 {
-
-  int keyCount = (sizeof(keyMap) / sizeof(keyMap[0]));
   for (int i = 0; i < keyCount; i++)
   {
-    int currentState = keyMap[i][2];
-    int change = keyMap[i][3];
-    int pin = keyMap[i][4];
-    if (((digitalRead(pin)) && (currentState == 0)) && (change == 0))
+    int currentState = ketStates[i][0];
+    int change = ketStates[i][1];
+    int col = (keyMatrixMap[i][1]);
+    int row = (keyMatrixMap[i][2]);
+    if (((checkPin(col, row)) && (currentState == 0)) && (change == 0))
     {
       // Pressed
       digitalWrite(10, HIGH);
-      keyMap[i][2] = 1;
-      keyMap[i][3] = 1;
+      ketStates[i][0] = 1;
+      ketStates[i][1] = 1;
     }
-    if (((!digitalRead(pin)) && (currentState == 1)) && (change == 0))
+    if (((!checkPin(col, row)) && (currentState == 1)) && (change == 0))
     {
       // Released
       digitalWrite(10, LOW);
-      keyMap[i][2] = 0;
-      keyMap[i][3] = 1;
+      ketStates[i][0] = 0;
+      ketStates[i][1] = 1;
     }
   }
-  delay(1);
+  delay(10);
 }
-
