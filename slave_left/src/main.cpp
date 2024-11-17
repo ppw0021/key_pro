@@ -9,18 +9,33 @@ int keyMatrixMap[][3] = {
     {2, 1, 0},
     {3, 2, 0},
     {4, 3, 0},
-    {5, 0, 1},
-    {6, 1, 1},
-    {7, 2, 1},
-    {8, 3, 1},
-    {9, 0, 2},
-    {10, 1, 2},
-    {11, 2, 2},
-    {12, 3, 2},
-    {13, 0, 3},
-    {14, 1, 3},
-    {15, 2, 3},
-    {16, 3, 3}};
+    {5, 4, 0},
+    {6, 5, 0},
+    {7, 0, 1}, //b
+    {8, 1, 1}, //v
+    {9, 2, 1}, //c
+    {10, 3, 1}, //x
+    {11, 4, 1}, //z
+    {12, 5, 1}, 
+    {13, 0, 2}, //g
+    {14, 1, 2}, //f
+    {15, 2, 2}, //d
+    {16, 3, 2}, //s
+    {17, 4, 2}, //a
+    {18, 5, 2}, 
+    {19, 0, 3}, //t
+    {20, 1, 3}, //r
+    {21, 2, 3}, //e
+    {22, 3, 3}, //w
+    {23, 4, 3}, //q
+    {24, 5, 3},
+    {25, 0, 4},
+    {26, 1, 4},
+    {27, 2, 4},
+    {28, 3, 4}, 
+    {29, 4, 4},
+    {30, 5, 4}
+};
 
 // State and change
 int ketStates[][2] = {
@@ -43,13 +58,24 @@ int ketStates[][2] = {
     {0, 0},
     {0, 0},
     {0, 0},
-    {0, 0}};
+    {0, 0},
+    {0, 0},
+    {0, 0},
+    {0, 0},
+    {0, 0},
+    {0, 0},
+    {0, 0},
+    {0, 0},
+    {0, 0},
+    {0, 0},
+    {0, 0}
+    };
 
 // Power pins (colID)
-int colToPinArray[] = {9, 8, 7, 6};
+int colToPinArray[] = {4, 3, 2, 10, 11, 12};
 
 // Reading pins (rowID)
-int rowToPinArray[] = {2, 3, 4, 5};
+int rowToPinArray[] = {9, 8, 7, 6, 5};
 
 // Total key count
 int keyCount = (sizeof(keyMatrixMap) / sizeof(keyMatrixMap[0]));
@@ -72,10 +98,11 @@ void requestEvent()
   //   command = 1;
   //   return;
   // }
+  int counter = 0;
   for (int i = 0; i < keyCount; i++)
   {
     int pressedAsciiCode = keyMatrixMap[i][0];
-    int releasedAsciiCode = keyMatrixMap[i][0] + 32;
+    int releasedAsciiCode = keyMatrixMap[i][0];
     int currentState = ketStates[i][0];
     int change = ketStates[i][1];
 
@@ -106,8 +133,8 @@ void requestEvent()
 void setup()
 {
 
-  pinMode(10, OUTPUT);
-  Wire.begin(4);                // join i2c bus with address #4
+  pinMode(13, OUTPUT);
+  Wire.begin(5);                // join i2c bus with address #4
   Wire.onReceive(receiveEvent); // register event
   Wire.onRequest(requestEvent); // Register request handler
   Serial.begin(115200);         // start serial for output
@@ -116,8 +143,9 @@ void setup()
   int colSize = sizeof(colToPinArray) / sizeof(colToPinArray[0]);
   for (int i = 0; i < colSize; i++)
   {
-    pinMode(colToPinArray[i], OUTPUT);
-    digitalWrite(colToPinArray[i], HIGH);
+    //CHANGED
+    pinMode(colToPinArray[i], INPUT);
+    //digitalWrite(colToPinArray[i], HIGH);
   }
 
   // Set pinmodes for inputs
@@ -133,9 +161,11 @@ bool checkPin(int colID, int rowID)
 {
   int col = colToPinArray[colID];
   int row = rowToPinArray[rowID];
+  pinMode(col, OUTPUT);
   digitalWrite(col, LOW);
   bool state = digitalRead(row);
-  digitalWrite(col, HIGH);
+  //digitalWrite(col, HIGH);
+  pinMode(col, INPUT);
   return !state;
 }
 
@@ -150,14 +180,14 @@ void loop()
     if (((checkPin(col, row)) && (currentState == 0)) && (change == 0))
     {
       // Pressed
-      digitalWrite(10, HIGH);
+      digitalWrite(13, HIGH);
       ketStates[i][0] = 1;
       ketStates[i][1] = 1;
     }
     if (((!checkPin(col, row)) && (currentState == 1)) && (change == 0))
     {
       // Released
-      digitalWrite(10, LOW);
+      digitalWrite(13, LOW);
       ketStates[i][0] = 0;
       ketStates[i][1] = 1;
     }
