@@ -11,31 +11,30 @@ int keyMatrixMap[][3] = {
     {4, 3, 0},
     {5, 4, 0},
     {6, 5, 0},
-    {7, 0, 1}, //b
-    {8, 1, 1}, //v
-    {9, 2, 1}, //c
-    {10, 3, 1}, //x
-    {11, 4, 1}, //z
-    {12, 5, 1}, 
-    {13, 0, 2}, //g
-    {14, 1, 2}, //f
-    {15, 2, 2}, //d
-    {16, 3, 2}, //s
-    {17, 4, 2}, //a
-    {18, 5, 2}, 
-    {19, 0, 3}, //t
-    {20, 1, 3}, //r
-    {21, 2, 3}, //e
-    {22, 3, 3}, //w
-    {23, 4, 3}, //q
+    {7, 0, 1},  // b
+    {8, 1, 1},  // v
+    {9, 2, 1},  // c
+    {10, 3, 1}, // x
+    {11, 4, 1}, // z
+    {12, 5, 1},
+    {13, 0, 2}, // g
+    {14, 1, 2}, // f
+    {15, 2, 2}, // d
+    {16, 3, 2}, // s
+    {17, 4, 2}, // a
+    {18, 5, 2},
+    {19, 0, 3}, // t
+    {20, 1, 3}, // r
+    {21, 2, 3}, // e
+    {22, 3, 3}, // w
+    {23, 4, 3}, // q
     {24, 5, 3},
     {25, 0, 4},
     {26, 1, 4},
     {27, 2, 4},
-    {28, 3, 4}, 
+    {28, 3, 4},
     {29, 4, 4},
-    {30, 5, 4}
-};
+    {30, 5, 4}};
 
 // State and change
 int ketStates[][2] = {
@@ -68,8 +67,7 @@ int ketStates[][2] = {
     {0, 0},
     {0, 0},
     {0, 0},
-    {0, 0}
-    };
+    {0, 0}};
 
 // Power pins (colID)
 int colToPinArray[] = {4, 3, 2, 10, 11, 12};
@@ -106,6 +104,7 @@ void requestEvent()
     int currentState = ketStates[i][0];
     int change = ketStates[i][1];
 
+    bool somethingSent = false;
     if ((currentState == 1) && (change == 1))
     {
       // Pressed
@@ -115,6 +114,7 @@ void requestEvent()
       Serial.println();
       Wire.write(pressedAsciiCode);
       ketStates[i][1] = 0;
+      somethingSent = true;
     }
     if ((currentState == 0) && (change == 1))
     {
@@ -125,8 +125,12 @@ void requestEvent()
       Serial.println();
       Wire.write(releasedAsciiCode);
       ketStates[i][1] = 0;
+      somethingSent = true;
     }
-    Wire.write(0);
+    if (somethingSent != true)
+    {
+      Wire.write(0);
+    }
   }
 }
 
@@ -143,9 +147,9 @@ void setup()
   int colSize = sizeof(colToPinArray) / sizeof(colToPinArray[0]);
   for (int i = 0; i < colSize; i++)
   {
-    //CHANGED
+    // CHANGED
     pinMode(colToPinArray[i], INPUT);
-    //digitalWrite(colToPinArray[i], HIGH);
+    // digitalWrite(colToPinArray[i], HIGH);
   }
 
   // Set pinmodes for inputs
@@ -164,7 +168,7 @@ bool checkPin(int colID, int rowID)
   pinMode(col, OUTPUT);
   digitalWrite(col, LOW);
   bool state = digitalRead(row);
-  //digitalWrite(col, HIGH);
+  // digitalWrite(col, HIGH);
   pinMode(col, INPUT);
   return !state;
 }

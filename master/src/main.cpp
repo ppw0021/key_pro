@@ -5,11 +5,11 @@
 void setup()
 {
   Wire.begin(); // Join I2C bus as master
-  // Keyboard.begin();
+  Keyboard.begin();
   Serial.begin(115200);
 }
 
-int keyMap[25] = {
+int keyMap[30] = {
     0,   // Placeholder for empty
     0,   // Placeholder for empty
     0,   // Placeholder for empty
@@ -34,7 +34,12 @@ int keyMap[25] = {
     'e', // ASCII for 'e'
     'w', // ASCII for 'w'
     'q', // ASCII for 'q'
-    0    // Placeholder for empty
+    0,    // Placeholder for empty
+    0,    // Placeholder for empty
+    0,    // Placeholder for empty
+    0,    // Placeholder for empty
+    0,    // Placeholder for empty
+    0,    // Placeholder for empty
 };
 
 bool keyState[25] = {false};
