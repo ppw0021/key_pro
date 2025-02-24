@@ -26,6 +26,9 @@ One of the challenges of this project was handling **more switches than availabl
 - This matrix design allows the detection of **30 switches** using only **11 input pins**.
 - By activating one column at a time and scanning the rows, keypresses are efficiently detected.
 
+![image](https://github.com/user-attachments/assets/ba17907c-1046-47b0-9831-104628e5da0d)
+
+
 ## Software & Programming
 
 - The **Arduino firmware** is written in **C++** using **PlatformIO** within **Visual Studio Code**.
